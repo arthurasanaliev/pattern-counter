@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -7,9 +8,11 @@ struct Cli {
     path: PathBuf,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = Cli::parse();
-    let content = std::fs::read_to_string(&args.path).expect("could not read file");
+
+    let content = std::fs::read_to_string(&args.path)
+        .with_context(|| format!("could not read file `{}`", args.path.display()))?;
     
     let mut total_count = 0;
     for line in content.lines() {
@@ -17,5 +20,7 @@ fn main() {
         total_count += count;
     }
 
-    println!("Total number of occurrences of {:?} is {}", args.pattern, total_count);
+    println!("Total number of occurrences of {:?} in {:?} is {}", args.pattern, args.path, total_count);
+
+    Ok(())
 }
